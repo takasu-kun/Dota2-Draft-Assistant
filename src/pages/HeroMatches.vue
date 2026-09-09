@@ -5,6 +5,7 @@ import { getHeroMatches, getHeroMatchDetail } from "../api/matches";
 import type { HeroMatch, HeroMatchDetail } from "../api/types";
 import { ApiError } from "../api/client";
 import HeroSelector from "../components/heroes/HeroSelector.vue";
+import Modal from "../components/Modal.vue";
 
 const route = useRoute();
 const heroId = ref<number | null>(null);
@@ -164,7 +165,7 @@ const isEmpty = computed(
         {{ loadingMore ? "Loading…" : "Load More" }}
       </button>
 
-      <section v-if="selectedMatchId" class="panel selected-match">
+      <Modal v-if="selectedMatchId" class="selected-match" @close="selectedMatchId = null">
         <p v-if="detailLoading" class="analysis-empty small">Loading item build…</p>
         <p v-else-if="detailError" class="api-error">
           {{ detailError }} <button @click="selectMatch(selectedMatchId)">Retry</button>
@@ -207,7 +208,7 @@ const isEmpty = computed(
             </li>
           </ol>
         </template>
-      </section>
+      </Modal>
     </template>
   </div>
 </template>
