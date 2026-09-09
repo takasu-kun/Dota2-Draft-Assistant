@@ -3,7 +3,7 @@ import { analyzeDraft } from "../api/draft";
 import type { DraftAnalysis, Role } from "../api/types";
 
 const MAX_TEAM_SIZE = 5;
-const DEFAULT_ROLE: Role = "support";
+const DEFAULT_ROLE: Role = "carry";
 
 const role = ref<Role>(DEFAULT_ROLE);
 const yourTeam = ref<number[]>([]);

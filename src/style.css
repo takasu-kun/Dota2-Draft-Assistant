@@ -917,6 +917,12 @@ button {
   margin: 0 0 14px;
   font-size: 18px;
 }
+.panel-subtitle {
+  margin: -8px 0 12px;
+  color: #8daac6;
+  font-size: 11px;
+  line-height: 1.5;
+}
 .top-hero {
   display: flex;
   align-items: center;
@@ -1803,6 +1809,7 @@ button {
 [data-theme="light"] .build-note,
 [data-theme="light"] .match-row small,
 [data-theme="light"] .hero-selector-trigger .placeholder,
+[data-theme="light"] .panel-subtitle,
 [data-theme="light"] .hero-card-actions a {
   color: var(--text-muted);
 }

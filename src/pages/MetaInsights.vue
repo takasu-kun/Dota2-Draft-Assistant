@@ -151,13 +151,27 @@ const attributeBreakdown = computed(() => {
         </article>
         <article class="panel">
           <h2>Role Rankings</h2>
+          <p class="panel-subtitle">
+            Real win rate for that exact position, last 180 days - a different, narrower measure
+            than the overall win rates elsewhere on this page.
+          </p>
           <p v-if="roleRankingsLoading" class="analysis-empty small">
             Computing real position data…
           </p>
           <p v-else-if="roleRankingsError" class="api-error">
             {{ roleRankingsError }} <button @click="loadRoleRankings">Retry</button>
           </p>
-          <div v-else v-for="x in roleRankings" :key="x.role" class="top-hero">
+          <div
+            v-else
+            v-for="x in roleRankings"
+            :key="x.role"
+            class="top-hero"
+            :title="
+              x.hero
+                ? `${x.hero.name}: ${x.winRate?.toFixed(1)}% win rate over ${x.games} games played as ${ROLE_LABELS[x.role]} (last 180 days) - not the same figure as this hero's overall win rate.`
+                : ''
+            "
+          >
             <b>{{ ROLE_LABELS[x.role] }}</b
             ><span>{{ x.hero?.name ?? "Not enough data" }}</span
             ><em>{{ x.winRate !== null ? `${x.winRate.toFixed(1)}%` : "—" }}</em>
