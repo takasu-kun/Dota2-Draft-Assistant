@@ -8,6 +8,7 @@ import {
 } from "./itemBuild.js";
 import { getRawHeroMatches, getRawMatchDetail } from "./heroMatchService.js";
 import type { RawItemConstant } from "./openDotaClient.js";
+import { mapWithConcurrency } from "./concurrency.js";
 
 /**
  * Aggregates a hero's build from real match data:
@@ -31,18 +32,6 @@ const ITEMS_PER_CATEGORY = 8;
 // Our own sample is capped at ANALYZED_MATCH_LIMIT, so this threshold is
 // relative to that, not to some larger "ideal" sample.
 const LOW_CONFIDENCE_THRESHOLD = 10;
-
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = [];
-  for (let i = 0; i < items.length; i += concurrency) {
-    results.push(...(await Promise.all(items.slice(i, i + concurrency).map(fn))));
-  }
-  return results;
-}
 
 /**
  * One analyzed match's contribution: the set of distinct items it bought

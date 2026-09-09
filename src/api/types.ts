@@ -15,9 +15,16 @@ export interface Meta {
   heroes: Hero[];
   topHeroes: Hero[];
 }
+export interface ScoreBreakdown {
+  counter: number;
+  synergy: number;
+  roleFit: number;
+  meta: number;
+}
 export interface DraftRecommendation {
   hero: Hero;
   score: number;
+  breakdown: ScoreBreakdown;
   reasons: string[];
 }
 export interface DraftAnalysis {

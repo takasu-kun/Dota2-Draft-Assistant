@@ -15,9 +15,22 @@ export interface HeroRelationship {
   score: number;
   reason: string | null;
 }
+/**
+ * Counter/Synergy/RoleFit/Meta each 0-100; see server/src/services/scoring.ts
+ * for how they combine into DraftRecommendation.score, and
+ * server/src/services/draftAnalysisService.ts / roleFitService.ts for how
+ * each is computed.
+ */
+export interface ScoreBreakdown {
+  counter: number;
+  synergy: number;
+  roleFit: number;
+  meta: number;
+}
 export interface DraftRecommendation {
   hero: Hero;
   score: number;
+  breakdown: ScoreBreakdown;
   reasons: string[];
 }
 export interface DraftAnalysis {

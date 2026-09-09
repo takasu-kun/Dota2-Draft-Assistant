@@ -59,17 +59,36 @@ function toHero(raw: RawHeroStat, totalPubMatches: number, totalProMatches: numb
 // getHero. It changes at most a few times a day, so a 10 minute cache keeps
 // requests fast without serving very stale data.
 const HERO_STATS_TTL_MS = 10 * 60 * 1000;
-const heroStatsCache = new AsyncCache<"all", Hero[]>(HERO_STATS_TTL_MS);
+interface HeroStatsSnapshot {
+  heroes: Hero[];
+  // OpenDota's raw role tags (e.g. ["Support","Disabler"]) per hero id,
+  // kept alongside the mapped Hero[] so roleFitService's tag-based fallback
+  // can use them without a second heroStats fetch.
+  rawRoleTagsById: Map<number, string[]>;
+}
+const heroStatsCache = new AsyncCache<"all", HeroStatsSnapshot>(HERO_STATS_TTL_MS);
 
-async function getAllHeroes(): Promise<Hero[]> {
+async function getHeroStatsSnapshot(): Promise<HeroStatsSnapshot> {
   return heroStatsCache.get("all", async () => {
     const raw = await openDotaClient.getHeroStats();
     // pub_pick is a count of hero *picks*, i.e. 10 per match, so dividing by
     // 10 approximates the number of public matches in the sample.
     const totalPubMatches = raw.reduce((sum, h) => sum + h.pub_pick, 0) / 10;
     const totalProMatches = raw.reduce((sum, h) => sum + h.pro_pick, 0) / 10;
-    return raw.map((h) => toHero(h, totalPubMatches, totalProMatches));
+    return {
+      heroes: raw.map((h) => toHero(h, totalPubMatches, totalProMatches)),
+      rawRoleTagsById: new Map(raw.map((h) => [h.id, h.roles])),
+    };
   });
+}
+
+async function getAllHeroes(): Promise<Hero[]> {
+  return (await getHeroStatsSnapshot()).heroes;
+}
+
+/** OpenDota's raw hero role tags (not our mapped positions) - see roleFitService.ts. */
+export async function getRawRoleTags(heroId: number): Promise<string[]> {
+  return (await getHeroStatsSnapshot()).rawRoleTagsById.get(heroId) ?? [];
 }
 
 export interface HeroFilters {

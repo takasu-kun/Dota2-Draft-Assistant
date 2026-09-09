@@ -8,13 +8,13 @@ const { heroTone } = useHeroCatalog();
 const { selectedRecommendation } = useDraftState();
 
 const stats = computed(() => {
-  const hero = selectedRecommendation.value?.hero;
-  if (!hero) return [];
+  const rec = selectedRecommendation.value;
+  if (!rec) return [];
   return [
-    ["Match Score", selectedRecommendation.value!.score],
-    ["Win Rate", hero.winRate ?? 0],
-    ["Pick Rate", hero.pickRate ?? 0],
-    ["Ban Rate", hero.banRate ?? 0],
+    ["Counter", rec.breakdown.counter],
+    ["Synergy", rec.breakdown.synergy],
+    ["Role Fit", rec.breakdown.roleFit],
+    ["Meta", rec.breakdown.meta],
   ] as const;
 });
 </script>

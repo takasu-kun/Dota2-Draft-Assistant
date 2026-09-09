@@ -44,6 +44,33 @@ All three endpoints validate their id(s) and return `404` (`HERO_NOT_FOUND` / `M
 
 Hero Explorer cards link into both pages (`View Matches` / `View Builds`, preserving the hero id via `?hero=`), and both pages share `src/components/heroes/HeroSelector.vue` for picking a hero.
 
+## Phase 2: Draft Recommendation Engine
+
+`POST /api/draft/analyze` (`server/src/services/draftAnalysisService.ts`) scores every eligible candidate hero for the requested role and returns the top 5, ranked, with a full explanation. A candidate is any hero matching the requested role that isn't already on either team - duplicates and already-picked heroes are never recommended.
+
+Each candidate gets four independent 0-100 scores, combined with centralized, documented weights (`server/src/services/scoring.ts`):
+
+```text
+Counter Score      40%   - how well the candidate matches up against the enemy lineup (real OpenDota matchup data)
+Synergy Score      30%   - how well the candidate pairs with the current team (real teammate win-rate data)
+Role Fit Score     15%   - how well the candidate suits the requested position (see below)
+Meta Score         15%   - how strong/popular the candidate is right now (win rate + pick rate)
+
+Final Score = Counter×0.40 + Synergy×0.30 + RoleFit×0.15 + Meta×0.15
+```
+
+**Counter/Synergy** reuse the same per-hero matchup/synergy lookups Hero Explorer already uses; a candidate's score is the average of its matched relationship scores against the enemy/ally heroes actually in the draft. No matching evidence found (only each hero's top-10 relationships are checked) yields a neutral 50, not a 0 - absence isn't evidence of a bad matchup.
+
+**Role Fit** (`server/src/services/roleFitService.ts`) is intentionally _not_ the same signal as Meta - it answers "does this hero suit this position?", not "is this hero strong overall?". OpenDota's public API has no "win rate by position 1-5" endpoint (that 5-way split is a community convention, not a data column), so this is built from what's actually real and queryable: each match's `lane_role` (safe/mid/off) and `is_roaming` flag, via a documented SQL aggregation. That reliably identifies carry/mid/offlane; it cannot distinguish position 4 from position 5 (both are "roaming" games in OpenDota's schema), so support and hard support deliberately read the same evidence rather than a fabricated split. The score blends _prevalence_ (how often the hero is actually played that way) with a sample-size-aware win rate (a small sample is shrunk toward neutral so it can't outrank a much larger, reliable one - see the worked example in `roleFitService.ts`). A hero with zero position data falls back to OpenDota's real hero role tags (e.g. "Support", "Carry") via a small, clearly-labeled heuristic table; a hero with neither falls back to a neutral 50. This is the only per-candidate signal that costs a fresh OpenDota call (one per not-yet-cached candidate, bounded concurrency) - Counter/Synergy reuse existing lookups and Meta reuses fields already on the Hero object.
+
+**Meta Score** is the hero's overall win rate and pick rate (already computed in `heroService.ts`), amplified around a 50% baseline the same way Role Fit's win rate is, so it uses more of the 0-100 range.
+
+Recommendation reasons are generated from the actual score components, not hardcoded per hero: a named reason like "Counters Weaver" or "Synergizes with Anti-Mage" for every matched relationship, plus "Strong fit for the support role" / "Good current meta performance" when those scores clear a threshold. No AI, no LLM - every reason traces back to a real number in the breakdown.
+
+Draft Score, Strengths, Weaknesses, and Priorities are unchanged from the original engine (win-rate edge between the two teams plus real counter/synergy hits, missing-role coverage) - Phase 2 only replaced how _recommendations_ are scored and explained.
+
+One practical note: OpenDota's free tier rate-limits to ~60 requests/minute. Role Fit's per-candidate lookups are cached for 10 minutes per hero, so the first analysis for a given role after a cache expiry is the slow one (several seconds); heavy concurrent use can occasionally hit that limit, in which case the affected request gets a client-safe `502` rather than a stack trace.
+
 ## Deploying (single Render web service)
 
 In production, the Express server also serves the built Vue app as static files (see `server/src/app.ts`), so the whole thing deploys as **one service on one host** - no separate static host, no CORS to configure.
