@@ -1,0 +1,11 @@
+import { Router } from "express";
+import * as heroes from "../controllers/heroesController.js";
+import { get as meta } from "../controllers/metaController.js";
+import { analyze } from "../controllers/draftController.js";
+export const api = Router();
+api.get("/heroes", heroes.list);
+api.get("/heroes/:id", heroes.detail);
+api.get("/heroes/:id/counters", heroes.counters);
+api.get("/heroes/:id/synergies", heroes.synergies);
+api.get("/meta", meta);
+api.post("/draft/analyze", analyze);

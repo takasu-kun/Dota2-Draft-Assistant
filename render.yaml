@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: dota-draft-assistant
+    runtime: node
+    plan: free
+    # Builds the Vue frontend (root) into ./dist, then the API (server/) into
+    # ./server/dist. The server serves both from one process - see
+    # server/src/app.ts and README.md.
+    buildCommand: npm install && npm run build && cd server && npm install && npm run build
+    startCommand: node server/dist/index.js
+    envVars:
+      # Render sets PORT automatically; server/src/config/env.ts reads it.
+      - key: CORS_ORIGIN
+        value: "*" # Same-origin in this deploy shape; only matters if you split the frontend out later.
