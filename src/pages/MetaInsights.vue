@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { getMeta } from "../api/meta";
-import type { Hero, Meta, Role } from "../api/types";
+import { getMeta, getRoleRankings } from "../api/meta";
+import type { Hero, Meta, RoleRanking } from "../api/types";
+import { ROLE_LABELS } from "../constants/roles";
 
 const meta = ref<Meta | null>(null);
 const loading = ref(true);
@@ -20,6 +21,25 @@ async function load() {
 }
 onMounted(load);
 
+// Real position-data lookups (see server/src/services/roleFitService.ts) -
+// noticeably slower than the rest of this page, so it loads independently
+// instead of blocking everything else behind it.
+const roleRankings = ref<RoleRanking[] | null>(null);
+const roleRankingsLoading = ref(true);
+const roleRankingsError = ref("");
+async function loadRoleRankings() {
+  roleRankingsLoading.value = true;
+  roleRankingsError.value = "";
+  try {
+    roleRankings.value = await getRoleRankings();
+  } catch {
+    roleRankingsError.value = "Unable to load role rankings.";
+  } finally {
+    roleRankingsLoading.value = false;
+  }
+}
+onMounted(loadRoleRankings);
+
 const highestWinRate = computed(() => meta.value?.heroes[0] ?? null);
 const mostPicked = computed(() => meta.value?.topHeroes[0] ?? null);
 const mostBanned = computed(() => {
@@ -28,26 +48,6 @@ const mostBanned = computed(() => {
     (best, h) => ((h.banRate ?? 0) > (best?.banRate ?? -1) ? h : best),
     null,
   );
-});
-
-const ROLE_LABELS: [Role, string][] = [
-  ["carry", "Carry"],
-  ["mid", "Mid"],
-  ["offlane", "Offlane"],
-  ["support", "Support"],
-  ["hard-support", "Hard Support"],
-];
-const roleRankings = computed(() => {
-  const heroes = meta.value?.heroes ?? [];
-  return ROLE_LABELS.map(([role, label]) => {
-    const top = heroes
-      .filter((h) => h.roles.includes(role))
-      .reduce<Hero | null>(
-        (best, h) => ((h.winRate ?? 0) > (best?.winRate ?? -1) ? h : best),
-        null,
-      );
-    return { label, hero: top };
-  });
 });
 
 const ATTRIBUTE_LABELS: Record<string, string> = {
@@ -127,10 +127,16 @@ const attributeBreakdown = computed(() => {
         </article>
         <article class="panel">
           <h2>Role Rankings</h2>
-          <div v-for="x in roleRankings" :key="x.label" class="top-hero">
-            <b>{{ x.label }}</b
-            ><span>{{ x.hero?.name ?? "—" }}</span
-            ><em>{{ x.hero?.winRate?.toFixed(1) ?? "—" }}%</em>
+          <p v-if="roleRankingsLoading" class="analysis-empty small">
+            Computing real position data…
+          </p>
+          <p v-else-if="roleRankingsError" class="api-error">
+            {{ roleRankingsError }} <button @click="loadRoleRankings">Retry</button>
+          </p>
+          <div v-else v-for="x in roleRankings" :key="x.role" class="top-hero">
+            <b>{{ ROLE_LABELS[x.role] }}</b
+            ><span>{{ x.hero?.name ?? "Not enough data" }}</span
+            ><em>{{ x.winRate !== null ? `${x.winRate.toFixed(1)}%` : "—" }}</em>
           </div>
         </article>
       </section>

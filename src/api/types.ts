@@ -15,6 +15,12 @@ export interface Meta {
   heroes: Hero[];
   topHeroes: Hero[];
 }
+export interface RoleRanking {
+  role: Role;
+  hero: Hero | null;
+  winRate: number | null;
+  games: number;
+}
 export interface ScoreBreakdown {
   counter: number;
   synergy: number;

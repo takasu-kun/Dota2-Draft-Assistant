@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as heroes from "../controllers/heroesController.js";
-import { get as meta } from "../controllers/metaController.js";
+import { get as meta, roleRankings } from "../controllers/metaController.js";
 import { analyze } from "../controllers/draftController.js";
 export const api = Router();
 api.get("/heroes", heroes.list);
@@ -11,4 +11,5 @@ api.get("/heroes/:id/matches", heroes.matches);
 api.get("/heroes/:id/matches/:matchId", heroes.matchDetail);
 api.get("/heroes/:id/builds", heroes.builds);
 api.get("/meta", meta);
+api.get("/meta/role-rankings", roleRankings);
 api.post("/draft/analyze", analyze);

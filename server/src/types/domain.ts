@@ -102,3 +102,17 @@ export interface HeroBuild {
   coreItems: BuildItem[];
   situationalItems: BuildItem[];
 }
+
+/**
+ * The best real-data hero for one application role, from
+ * roleFitService.ts's position data (not the broad role *tags* used to
+ * shortlist candidates - see getRoleRankings for how the two combine).
+ */
+export interface RoleRanking {
+  role: Role;
+  /** Null only if no candidate for this role has any usable position data at all. */
+  hero: Hero | null;
+  /** This hero's real win rate specifically in this position, if any games were sampled. */
+  winRate: number | null;
+  games: number;
+}

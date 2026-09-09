@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   scoreFromPositionData,
   scoreFromTags,
+  getRolePerformance,
   type PositionBucket,
 } from "../src/services/roleFitService.js";
 
@@ -72,6 +73,27 @@ describe("scoreFromPositionData - support/hard support share the same evidence",
       score !== null && score < 60,
       `expected prevalence to be diluted by the large non-support sample, got ${score}`,
     );
+  });
+});
+
+describe("getRolePerformance - raw display win rate, no shrinkage/amplification", () => {
+  test("computes the exact real win rate for the requested position", () => {
+    const buckets = [bucket({ laneRole: 1, roaming: false, games: 300, wins: 165 })]; // 55%
+    assert.deepEqual(getRolePerformance(buckets, "carry"), { winRate: 55, games: 300 });
+  });
+  test("a 100%-of-3-games sample reports the real (unshrunk) 100%, unlike the fit score", () => {
+    // getRolePerformance is for honest display, so it must NOT apply
+    // scoreFromPositionData's sample-size shrinkage - that's a scoring
+    // concern, not a "what actually happened" concern.
+    const buckets = [bucket({ laneRole: 2, roaming: false, games: 3, wins: 3 })];
+    assert.deepEqual(getRolePerformance(buckets, "mid"), { winRate: 100, games: 3 });
+  });
+  test("no games in the requested position returns null win rate and 0 games", () => {
+    const buckets = [bucket({ laneRole: 1, roaming: false, games: 500, wins: 250 })];
+    assert.deepEqual(getRolePerformance(buckets, "mid"), { winRate: null, games: 0 });
+  });
+  test("no position data at all returns null win rate and 0 games, not an error", () => {
+    assert.deepEqual(getRolePerformance([], "carry"), { winRate: null, games: 0 });
   });
 });
 

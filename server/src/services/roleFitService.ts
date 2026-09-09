@@ -1,6 +1,8 @@
-import type { Role } from "../types/domain.js";
+import type { Hero, Role, RoleRanking } from "../types/domain.js";
 import { AsyncCache } from "./cache.js";
 import { openDotaClient } from "./openDotaClient.js";
+import { mapWithConcurrency } from "./concurrency.js";
+import { getRawRoleTags, listHeroes } from "./heroService.js";
 
 /**
  * Role Fit answers "how appropriate is this hero for the role the user
@@ -60,7 +62,8 @@ interface RawPositionRow {
 const POSITION_TTL_MS = 10 * 60 * 1000;
 const positionCache = new AsyncCache<number, PositionBucket[]>(POSITION_TTL_MS);
 
-async function getPositionBuckets(heroId: number): Promise<PositionBucket[]> {
+/** Exported (rather than kept private) so getRoleRankings can reuse this cache for the winning hero's display win rate. */
+export async function getPositionBuckets(heroId: number): Promise<PositionBucket[]> {
   return positionCache.get(heroId, async () => {
     const { rows } = await openDotaClient.explorer<RawPositionRow>(positionQuery(heroId));
     return rows
@@ -91,6 +94,23 @@ function bucketsForRole(buckets: PositionBucket[], role: Role): PositionBucket[]
       // roles read the same roaming-game evidence.
       return buckets.filter((b) => b.roaming);
   }
+}
+
+/**
+ * Raw (unshrunk, unamplified) win rate for display purposes - e.g. "Lion
+ * wins 53% of games played as a support" - as opposed to scoreFromPositionData's
+ * abstract 0-100 fit score, which blends in prevalence and sample-size
+ * shrinkage and isn't meant to be read as a percentage.
+ */
+export function getRolePerformance(
+  buckets: PositionBucket[],
+  role: Role,
+): { winRate: number | null; games: number } {
+  const roleBuckets = bucketsForRole(buckets, role);
+  const games = roleBuckets.reduce((sum, b) => sum + b.games, 0);
+  if (games === 0) return { winRate: null, games: 0 };
+  const wins = roleBuckets.reduce((sum, b) => sum + b.wins, 0);
+  return { winRate: Math.round((wins / games) * 1000) / 10, games };
 }
 
 // A hero rarely played a given way shouldn't score as confidently as one
@@ -198,4 +218,67 @@ export async function getRoleFit(
   if (positionScore !== null) return { score: positionScore, source: "position-data" };
   if (rawTags.length > 0) return { score: scoreFromTags(rawTags, role), source: "role-tags" };
   return { score: NEUTRAL_SCORE, source: "no-data" };
+}
+
+/**
+ * Meta Insights' "Role Rankings": the real best hero per position, backed
+ * by the same position data as the draft recommendation engine - not the
+ * broad role *tags* a hero can be filtered by (a hero tagged for 4 of 5
+ * positions previously meant it could "win" all 4 just by having the
+ * single highest *overall* win rate of any hero, regardless of whether it
+ * was ever actually played that way).
+ *
+ * Every hero matching a role's broad tag can number in the dozens, and
+ * fetching real position data for all of them across all 5 roles would be
+ * dozens of upstream calls per role - too slow and too close to OpenDota's
+ * rate limit for one page load. So the tag-based list still does one job:
+ * narrowing to a shortlist (the most-picked heroes plausibly capable of
+ * the role) before real data decides the actual winner within it.
+ */
+const ROLE_RANKING_SHORTLIST_SIZE = 12;
+const ROLE_RANKING_CONCURRENCY = 6;
+const ALL_ROLES: Role[] = ["carry", "mid", "offlane", "support", "hard-support"];
+
+async function computeRoleRanking(role: Role): Promise<RoleRanking> {
+  const shortlist = (await listHeroes({ role }))
+    .slice()
+    .sort((a, b) => (b.pickRate ?? 0) - (a.pickRate ?? 0))
+    .slice(0, ROLE_RANKING_SHORTLIST_SIZE);
+
+  const scored = await mapWithConcurrency(shortlist, ROLE_RANKING_CONCURRENCY, async (hero) => {
+    const rawTags = await getRawRoleTags(hero.id);
+    const fit = await getRoleFit(hero.id, role, rawTags);
+    return { hero, fit };
+  });
+
+  const best = scored.reduce<{ hero: Hero; fit: RoleFitResult } | null>(
+    (top, cur) => (cur.fit.score > (top?.fit.score ?? -1) ? cur : top),
+    null,
+  );
+  if (!best) return { role, hero: null, winRate: null, games: 0 };
+
+  // Reuses getPositionBuckets' cache from the getRoleFit call above for
+  // this hero - no extra upstream request for the display win rate.
+  const buckets = await getPositionBuckets(best.hero.id).catch(() => []);
+  const performance = getRolePerformance(buckets, role);
+  return { role, hero: best.hero, winRate: performance.winRate, games: performance.games };
+}
+
+const ROLE_RANKINGS_TTL_MS = 10 * 60 * 1000;
+const roleRankingsCache = new AsyncCache<"all", RoleRanking[]>(ROLE_RANKINGS_TTL_MS);
+
+export async function getRoleRankings(): Promise<RoleRanking[]> {
+  return roleRankingsCache.get("all", async () => {
+    // Sequential, not Promise.all: each role's own shortlist already runs
+    // ROLE_RANKING_CONCURRENCY requests at once internally, so computing
+    // all 5 roles concurrently would multiply that peak concurrency
+    // fivefold and burst well past OpenDota's per-minute rate limit.
+    // Shortlists overlap heavily in practice (the same popular heroes tend
+    // to show up across roles), so a hero fetched for one role is usually
+    // a cache hit for the next, keeping this far cheaper than 5x a single
+    // role's cost.
+    const rankings: RoleRanking[] = [];
+    for (const role of ALL_ROLES) rankings.push(await computeRoleRanking(role));
+    return rankings;
+  });
 }
