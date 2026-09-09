@@ -14,6 +14,10 @@ const enemyTeam = ref<number[]>([]);
 // your own next pick, not the enemy's, so enemy slots always show the
 // hero's usual role instead.
 const pickedRoles = ref(new Map<number, Role>());
+// Set when a pick is blocked because "Your Role" is already assigned to
+// another hero on your team - a real team only has one hero per position.
+// The UI shows this as a modal and clears it on dismiss.
+const roleConflict = ref<Role | null>(null);
 const analysis = ref<DraftAnalysis | null>(null);
 const analyzing = ref(false);
 const analysisError = ref("");
@@ -30,12 +34,25 @@ function teamRef(side: "your" | "enemy") {
   return side === "your" ? yourTeam : enemyTeam;
 }
 
+/** Whether some *other* hero on your team is already assigned to this role. */
+function isRoleTaken(r: Role): boolean {
+  return [...pickedRoles.value.values()].includes(r);
+}
+
 function pickHero(side: "your" | "enemy", heroId: number) {
   const team = teamRef(side);
   const alreadyPicked = yourTeam.value.includes(heroId) || enemyTeam.value.includes(heroId);
   if (alreadyPicked || team.value.length >= MAX_TEAM_SIZE) return;
+  if (side === "your" && isRoleTaken(role.value)) {
+    roleConflict.value = role.value;
+    return;
+  }
   team.value = [...team.value, heroId];
   if (side === "your") pickedRoles.value.set(heroId, role.value);
+}
+
+function dismissRoleConflict() {
+  roleConflict.value = null;
 }
 
 function removeHero(side: "your" | "enemy", heroId: number) {
@@ -53,6 +70,7 @@ function reset() {
   yourTeam.value = [];
   enemyTeam.value = [];
   pickedRoles.value.clear();
+  roleConflict.value = null;
   analysis.value = null;
   analysisError.value = "";
   selectedRecommendationIndex.value = 0;
@@ -127,6 +145,9 @@ export function useDraftState() {
     selectedRecommendationIndex,
     selectedRecommendation,
     getPickedRole,
+    isRoleTaken,
+    roleConflict,
+    dismissRoleConflict,
     setRole: (r: Role) => (role.value = r),
     pickHero,
     removeHero,

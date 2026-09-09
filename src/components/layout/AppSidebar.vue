@@ -21,6 +21,9 @@ const links = [
       <div class="dota-watermark">◢</div>
       <b>Better Drafts<br />Brighter Wins</b>
       <p>Analyze. Adapt. Dominate.</p>
+      <a class="creator-credit" href="https://github.com/Takasu-kun" target="_blank" rel="noopener">
+        Made by Danielle Guerzon · GitHub: Takasu-kun
+      </a>
     </div>
   </aside>
 </template>

@@ -8,10 +8,22 @@ import DraftAnalysis from "../components/draft/DraftAnalysis.vue";
 import SynergyMap from "../components/draft/SynergyMap.vue";
 import RecommendationList from "../components/recommendations/RecommendationList.vue";
 import RecommendationDetail from "../components/recommendations/RecommendationDetail.vue";
+import Modal from "../components/Modal.vue";
 import { useDraftState } from "../composables/useDraftState";
+import { ROLE_LABELS } from "../constants/roles";
 
 const route = useRoute();
-const { yourTeam, enemyTeam, role, analysis, reset, shareUrl, hydrateFromQuery } = useDraftState();
+const {
+  yourTeam,
+  enemyTeam,
+  role,
+  analysis,
+  roleConflict,
+  dismissRoleConflict,
+  reset,
+  shareUrl,
+  hydrateFromQuery,
+} = useDraftState();
 
 const shareCopied = ref(false);
 const advancedOpen = ref(false);
@@ -70,5 +82,13 @@ async function onShare() {
       </div>
     </div>
     <aside class="recommendations"><RecommendationList /><RecommendationDetail /></aside>
+
+    <Modal v-if="roleConflict" class="role-conflict" @close="dismissRoleConflict">
+      <h2>Role Already Selected</h2>
+      <p>
+        <b>{{ ROLE_LABELS[roleConflict] }}</b> is already selected. Please select another role.
+      </p>
+      <button type="button" class="share" @click="dismissRoleConflict">Got it</button>
+    </Modal>
   </div>
 </template>

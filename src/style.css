@@ -161,6 +161,15 @@ button {
 .side-promo p {
   font-size: 13px;
 }
+.creator-credit {
+  display: block;
+  margin-top: 14px;
+  font-size: 11px;
+  color: #5c7a9c;
+}
+.creator-credit:hover {
+  color: #99caff;
+}
 .dota-watermark {
   font-size: 58px;
   color: #9c302b;
@@ -398,6 +407,40 @@ button {
 .role-row .analyze {
   font-size: 16px;
   flex-direction: row;
+}
+.role-row button.taken {
+  position: relative;
+  border-style: dashed;
+  color: #8da4be;
+}
+.role-row button.selected.taken {
+  border-style: solid;
+  color: #fff;
+}
+.taken-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #45e89f;
+}
+
+/* --- Role conflict modal --- */
+.role-conflict {
+  max-width: 380px;
+  text-align: center;
+}
+.role-conflict h2 {
+  font-size: 17px;
+  margin: 6px 0 12px;
+}
+.role-conflict p {
+  color: #c7d6e9;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 18px;
+}
+.role-conflict button {
+  width: 100%;
 }
 .analysis {
   border-top: 1px solid #1e3248;
@@ -1666,6 +1709,7 @@ button {
 [data-theme="light"] .picker-empty,
 [data-theme="light"] .side-promo,
 [data-theme="light"] .side-promo p,
+[data-theme="light"] .creator-credit,
 [data-theme="light"] .search {
   color: var(--text-muted);
 }
