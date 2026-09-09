@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { Rocket, Globe2, BarChart3, ClipboardList, Settings } from "lucide-vue-next";
+import { Rocket, Globe2, BarChart3 } from "lucide-vue-next";
 const links = [
   { to: "/", label: "Draft Assistant", icon: Rocket },
   { to: "/heroes", label: "Hero Explorer", icon: Globe2 },
   { to: "/meta", label: "Meta Insights", icon: BarChart3 },
-  { to: "/saved", label: "Saved Drafts", icon: ClipboardList },
-  { to: "/settings", label: "Settings", icon: Settings },
 ];
 </script>
 <template>

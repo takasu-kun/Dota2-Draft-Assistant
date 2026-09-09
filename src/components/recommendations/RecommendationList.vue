@@ -2,16 +2,14 @@
 import { useRouter } from "vue-router";
 import { useHeroCatalog } from "../../composables/useHeroCatalog";
 import { useDraftState } from "../../composables/useDraftState";
-import { usePreferences } from "../../composables/usePreferences";
 import HeroPortrait from "../HeroPortrait.vue";
 
 const { heroTone } = useHeroCatalog();
 const { analysis, selectedRecommendationIndex, role } = useDraftState();
-const { compactRecommendations } = usePreferences();
 const router = useRouter();
 </script>
 <template>
-  <section :class="['recommend-list', { compact: compactRecommendations }]">
+  <section class="recommend-list">
     <header>
       <h2>Recommended Picks</h2>
       <a role="button" @click="router.push({ path: '/heroes', query: { role } })">View More</a>

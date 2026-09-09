@@ -1,12 +1,11 @@
 import { computed, ref } from "vue";
 import { analyzeDraft } from "../api/draft";
 import type { DraftAnalysis, Role } from "../api/types";
-import { usePreferences } from "./usePreferences";
 
 const MAX_TEAM_SIZE = 5;
+const DEFAULT_ROLE: Role = "support";
 
-const { defaultRole } = usePreferences();
-const role = ref<Role>(defaultRole.value);
+const role = ref<Role>(DEFAULT_ROLE);
 const yourTeam = ref<number[]>([]);
 const enemyTeam = ref<number[]>([]);
 const analysis = ref<DraftAnalysis | null>(null);
@@ -102,15 +101,6 @@ function isRole(value: string): value is Role {
   );
 }
 
-function loadDraft(entry: { yourTeam: number[]; enemyTeam: number[]; role: Role }) {
-  yourTeam.value = entry.yourTeam;
-  enemyTeam.value = entry.enemyTeam;
-  role.value = entry.role;
-  analysis.value = null;
-  analysisError.value = "";
-  selectedRecommendationIndex.value = 0;
-}
-
 export function useDraftState() {
   return {
     role,
@@ -129,7 +119,6 @@ export function useDraftState() {
     analyze,
     shareUrl,
     hydrateFromQuery,
-    loadDraft,
     maxTeamSize: MAX_TEAM_SIZE,
   };
 }

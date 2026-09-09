@@ -9,15 +9,9 @@ import SynergyMap from "../components/draft/SynergyMap.vue";
 import RecommendationList from "../components/recommendations/RecommendationList.vue";
 import RecommendationDetail from "../components/recommendations/RecommendationDetail.vue";
 import { useDraftState } from "../composables/useDraftState";
-import { useSavedDrafts } from "../composables/useSavedDrafts";
-import { useHeroCatalog } from "../composables/useHeroCatalog";
-import { usePreferences } from "../composables/usePreferences";
 
 const route = useRoute();
 const { yourTeam, enemyTeam, role, analysis, reset, shareUrl, hydrateFromQuery } = useDraftState();
-const { heroById } = useHeroCatalog();
-const { save: saveDraft } = useSavedDrafts();
-const { showMatchupVisuals } = usePreferences();
 
 const shareCopied = ref(false);
 const advancedOpen = ref(false);
@@ -33,20 +27,6 @@ async function onShare() {
   } catch {
     window.prompt("Copy this link to share your draft:", url);
   }
-}
-
-function onSaveDraft() {
-  if (!analysis.value) return;
-  const names = (ids: number[]) => ids.map((id) => heroById.value.get(id)?.name ?? `#${id}`);
-  saveDraft({
-    title: `Draft Review #${Date.now().toString().slice(-4)}`,
-    score: analysis.value.draftScore,
-    role: role.value,
-    yourTeam: [...yourTeam.value],
-    enemyTeam: [...enemyTeam.value],
-    yourTeamNames: names(yourTeam.value),
-    enemyTeamNames: names(enemyTeam.value),
-  });
 }
 </script>
 <template>
@@ -70,7 +50,7 @@ function onSaveDraft() {
       </div>
       <RoleSelector />
       <DraftAnalysis />
-      <SynergyMap v-if="showMatchupVisuals" />
+      <SynergyMap />
       <div class="advanced" :class="{ open: advancedOpen }" @click="advancedOpen = !advancedOpen">
         <span>✥</span>
         <div>
@@ -81,17 +61,12 @@ function onSaveDraft() {
       </div>
       <div v-if="advancedOpen" class="advanced-panel">
         <p v-if="!analysis">Analyze your draft first to unlock detailed insights.</p>
-        <template v-else>
-          <p>
-            Draft score <b>{{ analysis.draftScore }}/100</b> for a
-            <b>{{ role }}</b>
-            pick, based on {{ yourTeam.length }} of your heroes vs {{ enemyTeam.length }} enemy
-            heroes.
-          </p>
-          <button type="button" class="share" :disabled="!analysis" @click="onSaveDraft">
-            Save this draft to Saved Drafts
-          </button>
-        </template>
+        <p v-else>
+          Draft score <b>{{ analysis.draftScore }}/100</b> for a
+          <b>{{ role }}</b>
+          pick, based on {{ yourTeam.length }} of your heroes vs {{ enemyTeam.length }} enemy
+          heroes.
+        </p>
       </div>
     </div>
     <aside class="recommendations"><RecommendationList /><RecommendationDetail /></aside>
