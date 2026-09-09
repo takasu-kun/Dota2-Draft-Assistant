@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { Plus, X } from "lucide-vue-next";
 import { useHeroCatalog } from "../../composables/useHeroCatalog";
+import { useDraftState } from "../../composables/useDraftState";
+import { ROLE_LABELS } from "../../constants/roles";
 import type { Hero } from "../../api/types";
 import HeroPicker from "./HeroPicker.vue";
 import HeroPortrait from "../HeroPortrait.vue";
@@ -13,7 +15,19 @@ const props = withDefaults(
 const emit = defineEmits<{ pick: [heroId: number]; remove: [] }>();
 
 const { heroTone } = useHeroCatalog();
+const { getPickedRole } = useDraftState();
 const pickerOpen = ref(false);
+
+// The role you had selected in "Your Role" when you picked this hero takes
+// priority over its generic role tag - it's what you actually drafted it
+// for, not just a heuristic guess (see useDraftState.ts's pickedRoles).
+const displayedRole = computed(() => {
+  if (!props.hero) return "";
+  const pickedRole = getPickedRole(props.hero.id);
+  return pickedRole
+    ? ROLE_LABELS[pickedRole]
+    : (props.hero.roles[0] ?? props.hero.primaryAttribute);
+});
 
 function onSelect(heroId: number) {
   pickerOpen.value = false;
@@ -35,7 +49,7 @@ function onSelect(heroId: number) {
       <HeroPortrait :name="hero.name" :image="hero.image" />
     </div>
     <b>{{ hero.name }}</b>
-    <small>{{ hero.roles[0] ?? hero.primaryAttribute }}</small>
+    <small>{{ displayedRole }}</small>
   </div>
   <div v-else-if="interactive" class="hero-slot empty" :class="{ enemy }">
     <button type="button" class="empty-slot-trigger" @click="pickerOpen = !pickerOpen">

@@ -79,8 +79,7 @@ button {
   border-radius: 5px;
   margin-left: 10px;
 }
-.top-tools,
-.profile {
+.top-tools {
   display: flex;
   align-items: center;
   gap: 21px;
@@ -113,14 +112,18 @@ button {
 .sun {
   color: #718da9;
 }
-.avatar {
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #e4bd9d, #6d392e);
-  border: 2px solid #263950;
+.opendota-credit {
+  font-size: 11px;
+  color: #718da9;
+  background: #0d1b2c;
+  border: 1px solid #263950;
+  padding: 8px 13px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.opendota-credit:hover {
+  color: #99caff;
+  border-color: #3a577a;
 }
 .sidebar {
   position: fixed;
@@ -940,8 +943,7 @@ button {
   .brand span,
   .top-tools > button,
   .sun,
-  .profile b,
-  .profile svg {
+  .opendota-credit {
     display: none;
   }
   .top-tools .search {

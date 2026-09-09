@@ -35,10 +35,9 @@ function onSearch() {
       <button type="button" class="icon-btn theme-toggle" title="Toggle theme" @click="toggleTheme">
         <Moon v-if="theme === 'dark'" :size="22" class="sun" /><Sun v-else :size="22" class="sun" />
       </button>
-      <div class="profile">
-        <div class="avatar">D</div>
-        <b>Danielle</b><ChevronDown :size="16" />
-      </div>
+      <a class="opendota-credit" href="https://www.opendota.com" target="_blank" rel="noopener">
+        Powered by OpenDota
+      </a>
     </div>
   </header>
 </template>

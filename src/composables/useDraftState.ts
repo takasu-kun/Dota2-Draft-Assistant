@@ -8,6 +8,12 @@ const DEFAULT_ROLE: Role = "support";
 const role = ref<Role>(DEFAULT_ROLE);
 const yourTeam = ref<number[]>([]);
 const enemyTeam = ref<number[]>([]);
+// The role that was selected in "Your Role (for next pick)" at the moment
+// each of *your* heroes was picked - shown on that hero's slot instead of a
+// generic role guess. Only tracked for your team: "your role" describes
+// your own next pick, not the enemy's, so enemy slots always show the
+// hero's usual role instead.
+const pickedRoles = ref(new Map<number, Role>());
 const analysis = ref<DraftAnalysis | null>(null);
 const analyzing = ref(false);
 const analysisError = ref("");
@@ -29,16 +35,24 @@ function pickHero(side: "your" | "enemy", heroId: number) {
   const alreadyPicked = yourTeam.value.includes(heroId) || enemyTeam.value.includes(heroId);
   if (alreadyPicked || team.value.length >= MAX_TEAM_SIZE) return;
   team.value = [...team.value, heroId];
+  if (side === "your") pickedRoles.value.set(heroId, role.value);
 }
 
 function removeHero(side: "your" | "enemy", heroId: number) {
   const team = teamRef(side);
   team.value = team.value.filter((id) => id !== heroId);
+  pickedRoles.value.delete(heroId);
+}
+
+/** The role selected in "Your Role" when this hero was picked, if any (see `pickedRoles` above). */
+function getPickedRole(heroId: number): Role | null {
+  return pickedRoles.value.get(heroId) ?? null;
 }
 
 function reset() {
   yourTeam.value = [];
   enemyTeam.value = [];
+  pickedRoles.value.clear();
   analysis.value = null;
   analysisError.value = "";
   selectedRecommendationIndex.value = 0;
@@ -112,6 +126,7 @@ export function useDraftState() {
     canAnalyze,
     selectedRecommendationIndex,
     selectedRecommendation,
+    getPickedRole,
     setRole: (r: Role) => (role.value = r),
     pickHero,
     removeHero,
