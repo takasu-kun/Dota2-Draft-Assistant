@@ -56,6 +56,16 @@ const ATTRIBUTE_LABELS: Record<string, string> = {
   intelligence: "Intelligence",
   universal: "Universal",
 };
+// Dota's own conventional attribute colors (strength/agility/intelligence
+// panels and icons throughout the game and community sites), so these read
+// as immediately familiar rather than arbitrary chart colors.
+const ATTRIBUTE_COLORS: Record<string, string> = {
+  strength: "#e05c4b",
+  agility: "#3ecf8e",
+  intelligence: "#4d9fe8",
+  universal: "#e0b23e",
+};
+const DEFAULT_ATTRIBUTE_COLOR = "#7299f0";
 const attributeBreakdown = computed(() => {
   const heroes = meta.value?.heroes ?? [];
   const groups = new Map<string, { total: number; count: number }>();
@@ -68,10 +78,17 @@ const attributeBreakdown = computed(() => {
   const rows = [...groups.entries()].map(([attribute, g]) => ({
     attribute,
     label: ATTRIBUTE_LABELS[attribute] ?? attribute,
+    color: ATTRIBUTE_COLORS[attribute] ?? DEFAULT_ATTRIBUTE_COLOR,
     avgPickRate: g.count ? g.total / g.count : 0,
   }));
+  // A pixel height (not a CSS percentage) so the bar's size doesn't depend
+  // on its flex column also sizing correctly around the value/label text.
   const max = Math.max(1, ...rows.map((r) => r.avgPickRate));
-  return rows.map((r) => ({ ...r, heightPct: Math.round((r.avgPickRate / max) * 100) }));
+  const MAX_BAR_HEIGHT_PX = 110;
+  return rows.map((r) => ({
+    ...r,
+    barHeightPx: Math.max(6, Math.round((r.avgPickRate / max) * MAX_BAR_HEIGHT_PX)),
+  }));
 });
 </script>
 <template>
@@ -116,13 +133,20 @@ const attributeBreakdown = computed(() => {
         <article class="panel chart">
           <h2>Pick Rate by Attribute</h2>
           <div class="bars">
-            <i
-              v-for="row in attributeBreakdown"
-              :key="row.attribute"
-              :style="{ height: Math.max(6, row.heightPct) + '%' }"
-              :title="`${row.label}: ${row.avgPickRate.toFixed(1)}% avg pick rate`"
-            ></i>
+            <div v-for="row in attributeBreakdown" :key="row.attribute" class="bar-col">
+              <span class="bar-value">{{ row.avgPickRate.toFixed(1) }}%</span>
+              <i
+                :style="{ height: row.barHeightPx + 'px', background: row.color }"
+                :title="`${row.label}: ${row.avgPickRate.toFixed(1)}% avg pick rate`"
+              ></i>
+              <small class="bar-label">{{ row.label }}</small>
+            </div>
           </div>
+          <ul class="chart-legend">
+            <li v-for="row in attributeBreakdown" :key="row.attribute">
+              <i :style="{ background: row.color }"></i>{{ row.label }}
+            </li>
+          </ul>
           <p>Average pick rate by primary attribute, current patch</p>
         </article>
         <article class="panel">

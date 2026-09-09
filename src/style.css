@@ -939,16 +939,52 @@ button {
 .bars {
   height: 150px;
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   gap: 10px;
-  padding: 10px 5px;
+  padding: 10px 5px 0;
   border-bottom: 1px solid #2b4260;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 .bars i {
   display: block;
-  flex: 1;
-  background: linear-gradient(#77a0ff, #443bc8);
+  width: 100%;
   border-radius: 4px 4px 0 0;
+}
+.bar-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: #d5e2ef;
+}
+.bar-label {
+  color: #8faac4;
+  font-size: 11px;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #9db8d6;
+}
+.chart-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
 }
 .chart p {
   color: #8faac4;
