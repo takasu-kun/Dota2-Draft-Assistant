@@ -108,6 +108,12 @@ watch([role, attribute], load);
               >Pick Rate <b>{{ hero.pickRate?.toFixed(1) ?? "—" }}%</b></span
             >
           </footer>
+          <div class="hero-card-actions">
+            <RouterLink :to="{ path: '/matches', query: { hero: hero.id } }"
+              >View Matches</RouterLink
+            >
+            <RouterLink :to="{ path: '/builds', query: { hero: hero.id } }">View Builds</RouterLink>
+          </div>
         </div>
       </article>
     </section>

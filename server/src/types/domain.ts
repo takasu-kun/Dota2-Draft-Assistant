@@ -27,3 +27,35 @@ export interface DraftAnalysis {
   priorities: { priority: "high" | "medium" | "low"; name: string }[];
   recommendations: DraftRecommendation[];
 }
+
+export interface HeroMatch {
+  matchId: number;
+  startTime: number;
+  duration: number;
+  /** From the selected hero's perspective, not the overall match winner. */
+  win: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+  leagueName: string | null;
+}
+
+export interface BuildItem {
+  itemId: number;
+  name: string;
+  image: string | null;
+  count: number;
+  /** Relative to the most-purchased item in this same category. */
+  percentage: number;
+}
+
+export interface HeroBuild {
+  heroId: number;
+  /** Best-effort proxy for match sample size (see heroBuildService.ts) - not exact. */
+  sampleSize: number;
+  lowConfidence: boolean;
+  startingItems: BuildItem[];
+  earlyItems: BuildItem[];
+  coreItems: BuildItem[];
+  situationalItems: BuildItem[];
+}

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { Rocket, Globe2, BarChart3 } from "lucide-vue-next";
+import { Rocket, Globe2, History, Wrench, BarChart3 } from "lucide-vue-next";
 const links = [
   { to: "/", label: "Draft Assistant", icon: Rocket },
   { to: "/heroes", label: "Hero Explorer", icon: Globe2 },
+  { to: "/matches", label: "Hero Matches", icon: History },
+  { to: "/builds", label: "Hero Builds", icon: Wrench },
   { to: "/meta", label: "Meta Insights", icon: BarChart3 },
 ];
 </script>

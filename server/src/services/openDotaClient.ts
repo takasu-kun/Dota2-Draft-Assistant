@@ -65,6 +65,42 @@ export interface RawPatch {
   date: string;
 }
 
+/**
+ * One entry of `GET /heroes/{hero_id}/matches`. This is pro/league match
+ * data only (not public matchmaking) - OpenDota's public API has no
+ * "recent pub matches for a hero" endpoint. There is no `hero_level` or
+ * `game_mode` field on this endpoint despite both existing on OpenDota's
+ * general match objects; only what's listed below is actually present.
+ */
+export interface RawHeroMatch {
+  match_id: number;
+  start_time: number;
+  duration: number;
+  radiant_win: boolean;
+  player_slot: number;
+  leagueid: number;
+  league_name: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+}
+
+/** One entry of `GET /constants/items` (keyed by internal item name). */
+export interface RawItemConstant {
+  id: number;
+  dname?: string;
+  img?: string;
+  cost?: number | null;
+}
+
+/** `GET /heroes/{hero_id}/itemPopularity` - counts of item purchases by game phase, from pro matches. */
+export interface RawItemPopularity {
+  start_game_items: Record<string, number>;
+  early_game_items: Record<string, number>;
+  mid_game_items: Record<string, number>;
+  late_game_items: Record<string, number>;
+}
+
 /** A row shape returned by `GET /explorer?sql=...` (raw SQL over OpenDota's dataset). */
 export interface ExplorerResponse<T> {
   rows: T[];
@@ -74,5 +110,9 @@ export const openDotaClient = {
   getHeroStats: () => request<RawHeroStat[]>("/heroStats"),
   getMatchups: (heroId: number) => request<RawMatchup[]>(`/heroes/${heroId}/matchups`),
   getPatches: () => request<RawPatch[]>("/constants/patch"),
+  getHeroMatches: (heroId: number) => request<RawHeroMatch[]>(`/heroes/${heroId}/matches`),
+  getItemPopularity: (heroId: number) =>
+    request<RawItemPopularity>(`/heroes/${heroId}/itemPopularity`),
+  getItemConstants: () => request<Record<string, RawItemConstant>>("/constants/items"),
   explorer: <T>(sql: string) => request<ExplorerResponse<T>>("/explorer", { sql }),
 };

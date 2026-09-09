@@ -27,3 +27,36 @@ export interface DraftAnalysis {
   priorities: { priority: "high" | "medium" | "low"; name: string }[];
   recommendations: DraftRecommendation[];
 }
+
+export interface HeroMatch {
+  matchId: number;
+  startTime: number;
+  duration: number;
+  win: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+  leagueName: string | null;
+}
+export interface HeroMatchPage {
+  matches: HeroMatch[];
+  total: number;
+  hasMore: boolean;
+}
+
+export interface BuildItem {
+  itemId: number;
+  name: string;
+  image: string | null;
+  count: number;
+  percentage: number;
+}
+export interface HeroBuild {
+  heroId: number;
+  sampleSize: number;
+  lowConfidence: boolean;
+  startingItems: BuildItem[];
+  earlyItems: BuildItem[];
+  coreItems: BuildItem[];
+  situationalItems: BuildItem[];
+}
