@@ -85,7 +85,12 @@ export interface RawHeroMatch {
   assists: number;
 }
 
-/** One entry of `GET /constants/items` (keyed by internal item name). */
+/**
+ * One entry of `GET /constants/items`, an object keyed by the item's
+ * internal name (e.g. "tango", "blink") - which is exactly the string
+ * `purchase_log[].key` uses on `GET /matches/{match_id}`, so that raw
+ * object is looked up directly by name rather than re-indexed by id.
+ */
 export interface RawItemConstant {
   id: number;
   dname?: string;
@@ -93,12 +98,32 @@ export interface RawItemConstant {
   cost?: number | null;
 }
 
-/** `GET /heroes/{hero_id}/itemPopularity` - counts of item purchases by game phase, from pro matches. */
-export interface RawItemPopularity {
-  start_game_items: Record<string, number>;
-  early_game_items: Record<string, number>;
-  mid_game_items: Record<string, number>;
-  late_game_items: Record<string, number>;
+/** One entry of `player.purchase_log` on `GET /matches/{match_id}`. */
+export interface RawPurchaseLogEntry {
+  /** Seconds relative to game start; negative/zero for pre-game purchases. */
+  time: number;
+  /** Internal item name - a key into `GET /constants/items`, not a numeric id. */
+  key: string;
+}
+
+/** The subset of `GET /matches/{match_id}`'s per-player fields this app uses. */
+export interface RawMatchPlayer {
+  hero_id: number;
+  player_slot: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  level: number | null;
+  /** Absent on matches OpenDota hasn't replay-parsed yet. */
+  purchase_log?: RawPurchaseLogEntry[] | null;
+}
+
+/** The subset of `GET /matches/{match_id}` this app uses. */
+export interface RawMatchDetail {
+  match_id: number;
+  duration: number;
+  radiant_win: boolean;
+  players: RawMatchPlayer[];
 }
 
 /** A row shape returned by `GET /explorer?sql=...` (raw SQL over OpenDota's dataset). */
@@ -111,8 +136,7 @@ export const openDotaClient = {
   getMatchups: (heroId: number) => request<RawMatchup[]>(`/heroes/${heroId}/matchups`),
   getPatches: () => request<RawPatch[]>("/constants/patch"),
   getHeroMatches: (heroId: number) => request<RawHeroMatch[]>(`/heroes/${heroId}/matches`),
-  getItemPopularity: (heroId: number) =>
-    request<RawItemPopularity>(`/heroes/${heroId}/itemPopularity`),
+  getMatchDetail: (matchId: number) => request<RawMatchDetail>(`/matches/${matchId}`),
   getItemConstants: () => request<Record<string, RawItemConstant>>("/constants/items"),
   explorer: <T>(sql: string) => request<ExplorerResponse<T>>("/explorer", { sql }),
 };

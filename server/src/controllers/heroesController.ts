@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import * as heroes from "../services/heroService.js";
-import { getHeroMatches } from "../services/heroMatchService.js";
+import { getHeroMatches, getHeroMatchDetail } from "../services/heroMatchService.js";
 import { getHeroBuild } from "../services/heroBuildService.js";
 import { OpenDotaError } from "../services/openDotaClient.js";
 const role = z.enum(["carry", "mid", "offlane", "support", "hard-support"]);
@@ -91,6 +91,43 @@ export async function matches(req: Request, res: Response, next: NextFunction) {
     } catch (error) {
       asFeatureError(error, "HERO_MATCHES_FAILED", "Unable to load recent matches for this hero.");
     }
+  } catch (error) {
+    next(error);
+  }
+}
+export async function matchDetail(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = z.coerce.number().int().positive().parse(req.params.id);
+    const matchId = z.coerce.number().int().positive().parse(req.params.matchId);
+    const hero = await heroes.getHero(id);
+    if (!hero)
+      return res
+        .status(404)
+        .json({ error: { code: "HERO_NOT_FOUND", message: "Hero not found." } });
+
+    let detail: Awaited<ReturnType<typeof getHeroMatchDetail>>;
+    try {
+      detail = await getHeroMatchDetail(id, matchId);
+    } catch (error) {
+      if (error instanceof OpenDotaError && error.status === 404) {
+        return res
+          .status(404)
+          .json({ error: { code: "MATCH_NOT_FOUND", message: "That match could not be found." } });
+      }
+      return asFeatureError(
+        error,
+        "HERO_MATCH_DETAIL_FAILED",
+        "Unable to load item build for this match.",
+      );
+    }
+    if (!detail)
+      return res.status(404).json({
+        error: {
+          code: "HERO_NOT_IN_MATCH",
+          message: "This hero was not found in the selected match.",
+        },
+      });
+    res.json({ data: detail });
   } catch (error) {
     next(error);
   }

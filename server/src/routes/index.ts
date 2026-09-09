@@ -8,6 +8,7 @@ api.get("/heroes/:id", heroes.detail);
 api.get("/heroes/:id/counters", heroes.counters);
 api.get("/heroes/:id/synergies", heroes.synergies);
 api.get("/heroes/:id/matches", heroes.matches);
+api.get("/heroes/:id/matches/:matchId", heroes.matchDetail);
 api.get("/heroes/:id/builds", heroes.builds);
 api.get("/meta", meta);
 api.post("/draft/analyze", analyze);

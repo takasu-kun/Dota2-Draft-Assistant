@@ -1319,6 +1319,10 @@ button:disabled {
   font-size: 12px;
   margin: 0 0 14px;
 }
+.match-sample a {
+  color: #82b4ff;
+  margin-left: 8px;
+}
 .match-table {
   border: 1px solid #20364f;
   border-radius: 8px;
@@ -1373,6 +1377,126 @@ button:disabled {
 }
 .load-more {
   margin-top: 14px;
+}
+.match-row-clickable {
+  width: 100%;
+  background: none;
+  border: 0;
+  border-top: 1px solid #1a2c41;
+  border-radius: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.match-row-clickable:hover {
+  background: #0d1c2c;
+}
+.match-row-clickable.selected {
+  background: #12253a;
+  box-shadow: inset 3px 0 0 #4c7fdd;
+}
+.result-badge.big {
+  font-size: 14px;
+  padding: 6px 16px;
+}
+
+/* --- Selected match: result summary + item build timeline --- */
+.selected-match {
+  margin-top: 18px;
+}
+.selected-match-head {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #1e3248;
+}
+.selected-match-head div {
+  display: flex;
+  flex-direction: column;
+}
+.selected-match-head b {
+  font-size: 15px;
+}
+.selected-match-head small {
+  color: #8daac6;
+  font-size: 11px;
+  margin-top: 2px;
+}
+.selected-match h3 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+.item-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid #263950;
+  margin-left: 8px;
+}
+.item-timeline li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 8px 20px;
+  margin-left: -2px;
+  border-left: 2px solid #263950;
+  position: relative;
+}
+.item-timeline li:before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #31dd91;
+  border: 2px solid #071522;
+}
+.timeline-time {
+  width: 64px;
+  flex-shrink: 0;
+  color: #8daac6;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.item-timeline .item-icon {
+  width: 30px;
+  height: 22px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+.item-timeline .item-name {
+  flex: 1;
+  color: #d5e2ef;
+  font-size: 13px;
+}
+.category-badge {
+  font-size: 10px;
+  text-transform: capitalize;
+  padding: 3px 9px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.category-badge.starting {
+  background: #24344a;
+  color: #d5e2ef;
+}
+.category-badge.early {
+  background: #1e3d3a;
+  color: #62f3a8;
+}
+.category-badge.core {
+  background: #1b416f;
+  color: #a8d3ff;
+}
+.category-badge.situational {
+  background: #423411;
+  color: #ffc943;
 }
 
 /* --- Hero Builds --- */
@@ -1564,4 +1688,21 @@ button {
 [data-theme="light"] .match-id,
 [data-theme="light"] .item-name {
   color: var(--text-body);
+}
+[data-theme="light"] .match-row-clickable:hover {
+  background: #eef3f9;
+}
+[data-theme="light"] .match-row-clickable.selected {
+  background: #e4ecf7;
+}
+[data-theme="light"] .selected-match-head {
+  border-color: var(--surface-panel-border);
+}
+[data-theme="light"] .selected-match-head small,
+[data-theme="light"] .timeline-time {
+  color: var(--text-muted);
+}
+[data-theme="light"] .item-timeline,
+[data-theme="light"] .item-timeline li {
+  border-color: var(--surface-panel-border);
 }

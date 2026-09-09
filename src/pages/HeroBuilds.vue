@@ -71,10 +71,11 @@ function items(b: HeroBuild, key: keyof HeroBuild): BuildItem[] {
     </p>
     <template v-else-if="build">
       <p class="match-sample">
-        Based on ~{{ build.sampleSize }} recent professional matches.
+        Based on {{ build.sampleSize }} recent matches with usable item data.
         <span v-if="build.lowConfidence" class="low-confidence"
           >Limited match data available - treat this build as a rough guide, not a certainty.</span
         >
+        <RouterLink :to="{ path: '/matches', query: { hero: heroId } }">View Matches</RouterLink>
       </p>
       <div class="build-grid">
         <article v-for="section in SECTIONS" :key="section.key" class="panel build-section">

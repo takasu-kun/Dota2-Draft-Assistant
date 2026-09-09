@@ -44,6 +44,26 @@ export interface HeroMatchPage {
   hasMore: boolean;
 }
 
+export type BuildCategory = "starting" | "early" | "core" | "situational";
+export interface MatchItemPurchase {
+  itemId: number;
+  name: string;
+  image: string | null;
+  timestamp: number;
+  category: BuildCategory;
+}
+export interface HeroMatchDetail {
+  matchId: number;
+  heroId: number;
+  win: boolean;
+  duration: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  heroLevel: number | null;
+  items: MatchItemPurchase[];
+}
+
 export interface BuildItem {
   itemId: number;
   name: string;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { getHeroMatches } from "../api/matches";
-import type { HeroMatch } from "../api/types";
+import { getHeroMatches, getHeroMatchDetail } from "../api/matches";
+import type { HeroMatch, HeroMatchDetail } from "../api/types";
 import { ApiError } from "../api/client";
 import HeroSelector from "../components/heroes/HeroSelector.vue";
 
@@ -22,6 +22,7 @@ async function load() {
   loading.value = true;
   error.value = "";
   matches.value = [];
+  selectedMatchId.value = null;
   try {
     const page = await getHeroMatches(heroId.value, { limit: PAGE_SIZE, offset: 0 });
     matches.value = page.matches;
@@ -52,6 +53,30 @@ async function loadMore() {
   }
 }
 
+// Selected match: shows the hero's result/K-D-A/level for that specific
+// match, plus the item purchase timeline for the player who played this
+// hero in it (GET /api/heroes/:id/matches/:matchId).
+const selectedMatchId = ref<number | null>(null);
+const selectedDetail = ref<HeroMatchDetail | null>(null);
+const detailLoading = ref(false);
+const detailError = ref("");
+
+async function selectMatch(matchId: number) {
+  if (!heroId.value) return;
+  selectedMatchId.value = matchId;
+  selectedDetail.value = null;
+  detailError.value = "";
+  detailLoading.value = true;
+  try {
+    selectedDetail.value = await getHeroMatchDetail(heroId.value, matchId);
+  } catch (e) {
+    detailError.value =
+      e instanceof ApiError ? e.message : "Unable to load the item build for this match.";
+  } finally {
+    detailLoading.value = false;
+  }
+}
+
 onMounted(() => {
   const q = route.query.hero;
   const id = typeof q === "string" ? Number(q) : NaN;
@@ -61,8 +86,11 @@ watch(heroId, load);
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
+  const s = Math.abs(seconds % 60);
   return `${m}:${String(s).padStart(2, "0")}`;
+}
+function formatTimestamp(seconds: number): string {
+  return seconds <= 0 ? "Pre-game" : formatDuration(seconds);
 }
 function formatDate(unixSeconds: number): string {
   return new Date(unixSeconds * 1000).toLocaleDateString(undefined, {
@@ -70,6 +98,9 @@ function formatDate(unixSeconds: number): string {
     month: "short",
     day: "numeric",
   });
+}
+function itemTooltip(item: HeroMatchDetail["items"][number]): string {
+  return `${item.name}\nPurchased: ${formatTimestamp(item.timestamp)}\nItem ID: ${item.itemId}\nMatch: #${selectedDetail.value?.matchId}`;
 }
 
 const isEmpty = computed(
@@ -95,13 +126,22 @@ const isEmpty = computed(
     </template>
     <p v-else-if="isEmpty" class="analysis-empty">No recent matches found for this hero.</p>
     <template v-else>
-      <p class="match-sample">Showing {{ matches.length }} of {{ total }} recent matches.</p>
+      <p class="match-sample">
+        Showing {{ matches.length }} of {{ total }} recent matches. Select one to see its item
+        build.
+      </p>
       <div class="match-table">
         <div class="match-row match-head">
           <span>Match</span><span>Result</span><span>K / D / A</span><span>Duration</span
           ><span>Date</span>
         </div>
-        <div v-for="m in matches" :key="m.matchId" class="match-row">
+        <button
+          v-for="m in matches"
+          :key="m.matchId"
+          type="button"
+          :class="['match-row', 'match-row-clickable', { selected: m.matchId === selectedMatchId }]"
+          @click="selectMatch(m.matchId)"
+        >
           <span class="match-id">{{ m.matchId }}</span>
           <span :class="['result-badge', m.win ? 'win' : 'loss']">{{
             m.win ? "Win" : "Loss"
@@ -112,7 +152,7 @@ const isEmpty = computed(
             {{ formatDate(m.startTime) }}
             <small v-if="m.leagueName">{{ m.leagueName }}</small>
           </span>
-        </div>
+        </button>
       </div>
       <button
         v-if="hasMore"
@@ -123,6 +163,51 @@ const isEmpty = computed(
       >
         {{ loadingMore ? "Loading…" : "Load More" }}
       </button>
+
+      <section v-if="selectedMatchId" class="panel selected-match">
+        <p v-if="detailLoading" class="analysis-empty small">Loading item build…</p>
+        <p v-else-if="detailError" class="api-error">
+          {{ detailError }} <button @click="selectMatch(selectedMatchId)">Retry</button>
+        </p>
+        <template v-else-if="selectedDetail">
+          <header class="selected-match-head">
+            <span :class="['result-badge', 'big', selectedDetail.win ? 'win' : 'loss']">{{
+              selectedDetail.win ? "Win" : "Loss"
+            }}</span>
+            <div>
+              <b>Match #{{ selectedDetail.matchId }}</b>
+              <small>{{ formatDuration(selectedDetail.duration) }} duration</small>
+            </div>
+            <div>
+              <b
+                >{{ selectedDetail.kills }} / {{ selectedDetail.deaths }} /
+                {{ selectedDetail.assists }}</b
+              >
+              <small>K / D / A</small>
+            </div>
+            <div v-if="selectedDetail.heroLevel !== null">
+              <b>{{ selectedDetail.heroLevel }}</b>
+              <small>Hero Level</small>
+            </div>
+          </header>
+          <h3>Item Build</h3>
+          <p v-if="!selectedDetail.items.length" class="analysis-empty small">
+            No item purchase data is available for this match.
+          </p>
+          <ol v-else class="item-timeline">
+            <li
+              v-for="item in selectedDetail.items"
+              :key="item.itemId + '-' + item.timestamp"
+              :title="itemTooltip(item)"
+            >
+              <span class="timeline-time">{{ formatTimestamp(item.timestamp) }}</span>
+              <img v-if="item.image" :src="item.image" :alt="item.name" class="item-icon" />
+              <span class="item-name">{{ item.name }}</span>
+              <span :class="['category-badge', item.category]">{{ item.category }}</span>
+            </li>
+          </ol>
+        </template>
+      </section>
     </template>
   </div>
 </template>

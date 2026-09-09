@@ -40,18 +40,48 @@ export interface HeroMatch {
   leagueName: string | null;
 }
 
+/**
+ * Deterministic purchase-time grouping shared by a single match's item
+ * timeline and the aggregated hero build (see heroBuildService.ts for the
+ * exact thresholds) - not an OpenDota concept, our own documented rule.
+ */
+export type BuildCategory = "starting" | "early" | "core" | "situational";
+
+export interface MatchItemPurchase {
+  itemId: number;
+  name: string;
+  image: string | null;
+  /** Seconds relative to game start; negative/zero for pre-game purchases. */
+  timestamp: number;
+  category: BuildCategory;
+}
+
+export interface HeroMatchDetail {
+  matchId: number;
+  heroId: number;
+  win: boolean;
+  duration: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  heroLevel: number | null;
+  /** Chronological, one entry per item (first purchase only if bought more than once). */
+  items: MatchItemPurchase[];
+}
+
 export interface BuildItem {
   itemId: number;
   name: string;
   image: string | null;
+  /** Number of analyzed matches where this item was purchased at least once. */
   count: number;
-  /** Relative to the most-purchased item in this same category. */
+  /** count / sampleSize, i.e. the share of analyzed matches that bought this item. */
   percentage: number;
 }
 
 export interface HeroBuild {
   heroId: number;
-  /** Best-effort proxy for match sample size (see heroBuildService.ts) - not exact. */
+  /** Exact number of recent matches analyzed that had usable item-purchase data. */
   sampleSize: number;
   lowConfidence: boolean;
   startingItems: BuildItem[];
