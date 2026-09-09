@@ -60,16 +60,11 @@ button {
   font-weight: 700;
 }
 .dota-mark {
-  background: #bd352c;
-  color: #12090a;
+  color: #e2231a;
   height: 40px;
   width: 40px;
   display: grid;
   place-items: center;
-  font-size: 35px;
-  border-radius: 4px;
-  transform: rotate(45deg);
-  overflow: hidden;
 }
 .brand span {
   font-size: 11px;
@@ -171,8 +166,9 @@ button {
   color: #99caff;
 }
 .dota-watermark {
-  font-size: 58px;
-  color: #9c302b;
+  color: #e2231a;
+  display: flex;
+  justify-content: center;
   margin-bottom: 12px;
 }
 .content {

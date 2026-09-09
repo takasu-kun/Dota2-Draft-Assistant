@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Rocket, Globe2, History, Wrench, BarChart3 } from "lucide-vue-next";
+import DotaLogo from "../DotaLogo.vue";
 const links = [
   { to: "/", label: "Draft Assistant", icon: Rocket },
   { to: "/heroes", label: "Hero Explorer", icon: Globe2 },
@@ -18,7 +19,7 @@ const links = [
       >
     </nav>
     <div class="side-promo">
-      <div class="dota-watermark">◢</div>
+      <div class="dota-watermark"><DotaLogo :size="52" /></div>
       <b>Better Drafts<br />Brighter Wins</b>
       <p>Analyze. Adapt. Dominate.</p>
       <a class="creator-credit" href="https://github.com/Takasu-kun" target="_blank" rel="noopener">

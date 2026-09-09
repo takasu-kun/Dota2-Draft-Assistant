@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { Search, ChevronDown, Sun, Moon } from "lucide-vue-next";
 import { usePatch } from "../../composables/usePatch";
 import { usePreferences } from "../../composables/usePreferences";
+import DotaLogo from "../DotaLogo.vue";
 
 const router = useRouter();
 const { patch } = usePatch();
@@ -18,7 +19,7 @@ function onSearch() {
 <template>
   <header class="topbar">
     <div class="brand">
-      <div class="dota-mark">◢</div>
+      <div class="dota-mark"><DotaLogo :size="24" /></div>
       <div><b>Dota 2</b><strong>Draft Assistant</strong></div>
       <span>BETA</span>
     </div>
