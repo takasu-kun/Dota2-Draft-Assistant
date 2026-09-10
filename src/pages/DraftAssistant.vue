@@ -6,6 +6,7 @@ import DraftTeamCard from "../components/draft/DraftTeamCard.vue";
 import RoleSelector from "../components/draft/RoleSelector.vue";
 import DraftAnalysis from "../components/draft/DraftAnalysis.vue";
 import SynergyMap from "../components/draft/SynergyMap.vue";
+import AdvancedInsights from "../components/draft/AdvancedInsights.vue";
 import RecommendationList from "../components/recommendations/RecommendationList.vue";
 import RecommendationDetail from "../components/recommendations/RecommendationDetail.vue";
 import Modal from "../components/Modal.vue";
@@ -13,17 +14,7 @@ import { useDraftState } from "../composables/useDraftState";
 import { ROLE_LABELS } from "../constants/roles";
 
 const route = useRoute();
-const {
-  yourTeam,
-  enemyTeam,
-  role,
-  analysis,
-  roleConflict,
-  dismissRoleConflict,
-  reset,
-  shareUrl,
-  hydrateFromQuery,
-} = useDraftState();
+const { roleConflict, dismissRoleConflict, reset, shareUrl, hydrateFromQuery } = useDraftState();
 
 const shareCopied = ref(false);
 const advancedOpen = ref(false);
@@ -72,13 +63,7 @@ async function onShare() {
         <ChevronDown :size="18" :class="{ flipped: advancedOpen }" />
       </div>
       <div v-if="advancedOpen" class="advanced-panel">
-        <p v-if="!analysis">Analyze your draft first to unlock detailed insights.</p>
-        <p v-else>
-          Draft score <b>{{ analysis.draftScore }}/100</b> for a
-          <b>{{ role }}</b>
-          pick, based on {{ yourTeam.length }} of your heroes vs {{ enemyTeam.length }} enemy
-          heroes.
-        </p>
+        <AdvancedInsights />
       </div>
     </div>
     <aside class="recommendations"><RecommendationList /><RecommendationDetail /></aside>

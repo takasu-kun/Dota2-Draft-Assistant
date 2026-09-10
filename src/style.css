@@ -713,6 +713,35 @@ button {
   font-weight: 700;
   margin-left: auto;
 }
+.pick-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 15px;
+  border: 1px solid #2ce092;
+  background: #0d3328;
+  color: #6ff6c4;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.pick-btn:hover:not(:disabled) {
+  background: #2ce092;
+  color: #052015;
+}
+.pick-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.pick-btn.picked {
+  border-color: #3a5068;
+  background: transparent;
+  color: #7d94ab;
+  padding: 0 8px;
+}
 .rec-detail {
   margin-top: 10px;
   border: 1px solid #5784c9;
@@ -1297,7 +1326,7 @@ button:disabled {
   padding: 10px 14px;
   font: inherit;
 }
-/* Recommendation rows as buttons */
+/* Recommendation rows act like buttons (role="button" div, so a real <button> can nest inside for Pick) */
 .rec-row {
   background: none;
   border: 0;
@@ -1341,6 +1370,50 @@ button:disabled {
 }
 .advanced-panel p {
   margin: 0 0 10px;
+}
+.insights-summary {
+  color: #c7d8ec;
+  line-height: 1.5;
+}
+.role-fill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.role-fill {
+  border: 1px solid #1b3149;
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #0d1e2f;
+}
+.role-fill.open {
+  border-color: #4a3520;
+  background: #1d160c66;
+}
+.role-fill-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+.role-fill.filled .role-fill-head svg {
+  color: #35e991;
+}
+.role-fill.open .role-fill-head svg {
+  color: #e3a928;
+}
+.role-fill-hero {
+  margin-left: auto;
+  color: #9cb2ca;
+  font-weight: 400;
+  font-size: 12px;
+}
+.role-fill-tip {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #9cb2ca;
+  line-height: 1.5;
 }
 
 /* --- Hero Explorer: matches/builds links on each card --- */
@@ -1778,6 +1851,21 @@ button {
   color: #4c6fa8;
 }
 [data-theme="light"] .advanced small {
+  color: var(--text-muted);
+}
+[data-theme="light"] .insights-summary {
+  color: var(--text-body);
+}
+[data-theme="light"] .role-fill {
+  background: var(--surface-panel);
+  border-color: var(--surface-panel-border);
+}
+[data-theme="light"] .role-fill.open {
+  background: #fdf3e2;
+  border-color: #e8cf9e;
+}
+[data-theme="light"] .role-fill-hero,
+[data-theme="light"] .role-fill-tip {
   color: var(--text-muted);
 }
 [data-theme="light"] .recommendations {

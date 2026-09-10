@@ -10,13 +10,14 @@ const { heroes, loading } = useHeroCatalog();
 const search = ref("");
 const root = ref<HTMLElement | null>(null);
 
+// No cap: every hero not already picked should be selectable here, not just
+// the first N (the list scrolls within a fixed-height popover - see CSS).
 const results = computed(() => {
   const excluded = new Set(props.exclude);
   const q = search.value.trim().toLowerCase();
   return heroes.value
     .filter((h) => !excluded.has(h.id))
-    .filter((h) => !q || h.name.toLowerCase().includes(q) || h.shortName.toLowerCase().includes(q))
-    .slice(0, 40);
+    .filter((h) => !q || h.name.toLowerCase().includes(q) || h.shortName.toLowerCase().includes(q));
 });
 
 function onClickOutside(event: MouseEvent) {

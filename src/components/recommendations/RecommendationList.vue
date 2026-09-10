@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
+import { UserPlus, Check } from "lucide-vue-next";
 import { useHeroCatalog } from "../../composables/useHeroCatalog";
 import { useDraftState } from "../../composables/useDraftState";
 import HeroPortrait from "../HeroPortrait.vue";
 
 const { heroTone } = useHeroCatalog();
-const { analysis, selectedRecommendationIndex, role } = useDraftState();
+const { analysis, selectedRecommendationIndex, role, yourTeam, pickHero } = useDraftState();
 const router = useRouter();
+
+function onPick(event: Event, heroId: number) {
+  event.stopPropagation();
+  pickHero("your", heroId);
+}
 </script>
 <template>
   <section class="recommend-list">
@@ -18,13 +24,15 @@ const router = useRouter();
     <p v-else-if="!analysis.recommendations.length" class="analysis-empty">
       No recommendations available for this role right now.
     </p>
-    <button
+    <div
       v-else
       v-for="(rec, i) in analysis.recommendations"
       :key="rec.hero.id"
-      type="button"
+      role="button"
+      tabindex="0"
       :class="['rec-row', { featured: i === 0, selected: i === selectedRecommendationIndex }]"
       @click="selectedRecommendationIndex = i"
+      @keydown.enter="selectedRecommendationIndex = i"
     >
       <span class="rank">{{ i + 1 }}</span>
       <div :class="['portrait', heroTone(rec.hero.id)]">
@@ -40,6 +48,25 @@ const router = useRouter();
         >
       </div>
       <div class="mini-ring">{{ rec.score }}</div>
-    </button>
+      <button
+        v-if="yourTeam.includes(rec.hero.id)"
+        type="button"
+        class="pick-btn picked"
+        disabled
+        title="Already on your team"
+      >
+        <Check :size="14" />
+      </button>
+      <button
+        v-else
+        type="button"
+        class="pick-btn"
+        :disabled="yourTeam.length >= 5"
+        title="Add to your team"
+        @click="onPick($event, rec.hero.id)"
+      >
+        <UserPlus :size="14" /><span>Pick</span>
+      </button>
+    </div>
   </section>
 </template>
