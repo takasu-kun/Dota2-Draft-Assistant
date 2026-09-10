@@ -73,6 +73,21 @@ Draft Score, Strengths, Weaknesses, and Priorities are unchanged from the origin
 
 One practical note: OpenDota's free tier rate-limits to ~60 requests/minute. Role Fit's per-candidate lookups are cached for 10 minutes per hero, so the first analysis for a given role after a cache expiry is the slow one (several seconds); heavy concurrent use can occasionally hit that limit, in which case the affected request gets a client-safe `502` rather than a stack trace.
 
+## Advanced Insights: Early/Mid/Late strategic timeline
+
+`analyzeDraft`'s response also carries `advancedInsights` (`server/src/services/advancedInsights.ts`), shown in the Draft Assistant's "Advanced Insights" panel below the existing Draft Analysis (Draft Score/Strengths/Weaknesses) and Recommended Picks - it doesn't replace or recompute either of those. It answers a different question: **"given the heroes drafted so far, how should each team play the Early Game (0-15 min), Mid Game (15-30 min), and Late Game (30+ min)?"**
+
+This is a deterministic heuristic model, not a prediction:
+
+1. Every hero's real OpenDota role tags (`GET /heroStats`'s `roles` field - e.g. `Carry`, `Disabler`, `Initiator`, `Durable`, `Support`, `Nuker`, `Pusher`, `Jungler`, `Escape`) already fetched for the rest of the recommendation engine are reused here - no extra OpenDota requests.
+2. A hand-written, centralized weight table maps those tags onto eight strategic **dimensions**: laning, teamfight, pickoff, push, scaling, farming, catch, sustain. A team's score per dimension is the _average_ contribution per rostered hero (not a sum), so a 1-2 hero partial draft is scored fairly rather than being penalized just for having fewer heroes than a full 5-stack.
+3. A second centralized weight table (each phase's weights documented to sum to 1, same convention as `scoring.ts`'s `SCORING_WEIGHTS`) blends those eight dimensions into three phase scores - e.g. Late Game weighs scaling/teamfight/sustain; Early Game weighs laning/pickoff/catch/farming.
+4. Comparing your team's and the enemy's phase score (past a centralized threshold) produces a Your Team / Enemy / Even **advantage** call for that phase, with a reason naming the deciding dimension. Each phase also gets a qualitative **Power Window** (Strong/Moderate/Weak, thresholded the same way) instead of a fabricated percentage.
+5. Game plan, priorities, and warnings are template sentences chosen from _which dimensions actually scored high or low for this specific draft_ - never a hardcoded per-hero script - and are written from each side's own point of view (the enemy card is phrased "their"/"the enemy's", never "your").
+6. A **confidence** level (high/medium/low, kept internal - not a scary label shown to the user) reflects how much real tag data actually backed a phase's numbers, surfaced only as a soft "limited data" note when it's low. Missing data, a single-hero team, or heroes with no matching tags never crash the engine - they degrade to neutral scores instead.
+
+Nothing here invents a statistic OpenDota doesn't provide (no fabricated timings, GPM, or phase-specific win rates) - every number traces back to a hero's real role tags through a documented, adjustable heuristic, and every threshold/weight lives in one place in `advancedInsights.ts` rather than scattered through the code. It's still just strategic _analysis_: the copy is deliberately hedged ("Your draft has a strong early-game advantage", never "you will win early").
+
 ## Deploying (single Render web service)
 
 In production, the Express server also serves the built Vue app as static files (see `server/src/app.ts`), so the whole thing deploys as **one service on one host** - no separate static host, no CORS to configure.

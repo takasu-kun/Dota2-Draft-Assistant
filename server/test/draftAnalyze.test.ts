@@ -88,5 +88,19 @@ describe("POST /api/draft/analyze - partial draft, real recommendations", () => 
       scores,
       [...scores].sort((a, b) => b - a),
     );
+
+    // Advanced Insights: a full early/mid/late phase timeline ships alongside
+    // the existing score/strengths/weaknesses/recommendations, none of which
+    // this feature should ever replace.
+    for (const phase of ["early", "mid", "late"] as const) {
+      const p = data.advancedInsights[phase];
+      assert.equal(p.phase, phase);
+      assert.ok(["your", "enemy", "even"].includes(p.advantage));
+      assert.ok(["high", "medium", "low"].includes(p.confidence));
+      assert.ok(typeof p.yourTeam.gamePlan === "string" && p.yourTeam.gamePlan.length > 0);
+      assert.ok(typeof p.enemyTeam.gamePlan === "string" && p.enemyTeam.gamePlan.length > 0);
+    }
+    assert.ok(typeof data.advancedInsights.yourWinCondition === "string");
+    assert.ok(typeof data.advancedInsights.enemyWinCondition === "string");
   });
 });

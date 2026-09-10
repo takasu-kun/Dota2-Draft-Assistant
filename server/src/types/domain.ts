@@ -39,6 +39,45 @@ export interface DraftAnalysis {
   weaknesses: string[];
   priorities: { priority: "high" | "medium" | "low"; name: string }[];
   recommendations: DraftRecommendation[];
+  advancedInsights: AdvancedInsights;
+}
+
+/**
+ * Advanced Insights: a strategic timeline answering "how should each team
+ * play this draft across the game?" - see server/src/services/advancedInsights.ts
+ * for the full model. Entirely derived from real hero data (OpenDota's role
+ * tags, our own mapped positions) via a hand-written, documented heuristic;
+ * never fabricated statistics, never AI-generated.
+ */
+export type GamePhase = "early" | "mid" | "late";
+export type InsightConfidence = "high" | "medium" | "low";
+export type PowerWindow = "Strong" | "Moderate" | "Weak";
+export type PhaseAdvantage = "your" | "enemy" | "even";
+
+export interface PhaseTeamStrategy {
+  gamePlan: string;
+  priorities: string[];
+  avoid: string[];
+  powerWindow: PowerWindow;
+}
+
+export interface PhaseComparison {
+  phase: GamePhase;
+  label: string;
+  window: string;
+  advantage: PhaseAdvantage;
+  reason: string;
+  yourTeam: PhaseTeamStrategy;
+  enemyTeam: PhaseTeamStrategy;
+  confidence: InsightConfidence;
+}
+
+export interface AdvancedInsights {
+  early: PhaseComparison;
+  mid: PhaseComparison;
+  late: PhaseComparison;
+  yourWinCondition: string;
+  enemyWinCondition: string;
 }
 
 export interface HeroMatch {

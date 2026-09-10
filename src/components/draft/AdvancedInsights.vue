@@ -5,6 +5,7 @@ import type { Role } from "../../api/types";
 import { useDraftState } from "../../composables/useDraftState";
 import { useHeroCatalog } from "../../composables/useHeroCatalog";
 import { ROLE_LABELS, ROLE_STRATEGY_TIPS } from "../../constants/roles";
+import PhaseStrategy from "./PhaseStrategy.vue";
 
 const ROLES = Object.keys(ROLE_LABELS) as Role[];
 
@@ -84,5 +85,6 @@ const summary = computed(() => {
         <p v-if="!r.hero" class="role-fill-tip">{{ ROLE_STRATEGY_TIPS[r.role] }}</p>
       </div>
     </div>
+    <PhaseStrategy :insights="analysis.advancedInsights" />
   </template>
 </template>

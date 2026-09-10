@@ -9,6 +9,7 @@ import { getCounters, getHero, getRawRoleTags, getSynergies, listHeroes } from "
 import { getRoleFit } from "./roleFitService.js";
 import { computeFinalScore, computeMetaScore } from "./scoring.js";
 import { mapWithConcurrency } from "./concurrency.js";
+import { buildAdvancedInsights } from "./advancedInsights.js";
 
 export interface DraftAnalysisInput {
   yourTeam: number[];
@@ -55,6 +56,20 @@ export async function analyzeDraft(input: DraftAnalysisInput): Promise<DraftAnal
     requireHeroes(input.yourTeam),
     requireHeroes(input.enemyTeam),
   ]);
+
+  // Advanced Insights' role tags are backed by the same cached heroStats
+  // snapshot getHero() above already warmed - this is a plain in-memory
+  // lookup, not an extra OpenDota request.
+  const allDraftedHeroes = [...yourHeroes, ...enemyHeroes];
+  const rawTagsById = new Map<number, string[]>(
+    await Promise.all(
+      allDraftedHeroes.map(async (h): Promise<[number, string[]]> => [
+        h.id,
+        await getRawRoleTags(h.id),
+      ]),
+    ),
+  );
+  const advancedInsights = buildAdvancedInsights(yourHeroes, enemyHeroes, rawTagsById);
 
   // Bounded by team size (<=5 each), run in parallel: REST matchup lookups
   // are fast, the synergy lookups hit OpenDota's /explorer endpoint and are
@@ -186,5 +201,6 @@ export async function analyzeDraft(input: DraftAnalysisInput): Promise<DraftAnal
     weaknesses: weaknesses.length ? weaknesses : ["No major counters identified yet"],
     priorities,
     recommendations,
+    advancedInsights,
   };
 }

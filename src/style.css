@@ -1034,6 +1034,11 @@ button {
   .synergy-inner {
     grid-template-columns: 1fr 155px 1fr;
   }
+  .phase-teams,
+  .win-conditions,
+  .role-fill-grid {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 920px) {
   .sidebar {
@@ -1137,6 +1142,13 @@ button {
   }
   .red-map {
     display: none;
+  }
+  .phase-tabs {
+    overflow-x: auto;
+  }
+  .phase-tabs button {
+    flex: 0 0 auto;
+    min-width: 96px;
   }
   .analysis-grid,
   .metric-row {
@@ -1413,6 +1425,220 @@ button:disabled {
   margin: 8px 0 0;
   font-size: 12px;
   color: #9cb2ca;
+  line-height: 1.5;
+}
+
+/* --- Advanced Insights: Early/Mid/Late phase strategy timeline --- */
+.phase-strategy {
+  margin-top: 18px;
+  border-top: 1px solid #1b3149;
+  padding-top: 16px;
+}
+.phase-strategy-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+.phase-strategy-head b {
+  font-size: 15px;
+}
+.phase-strategy-head small {
+  color: #9cb2ca;
+}
+.phase-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.phase-tabs button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 9px 6px;
+  border: 1px solid #1d3247;
+  border-radius: 7px;
+  background: #0d1e2f;
+  color: #c7d8ec;
+  cursor: pointer;
+}
+.phase-tabs button b {
+  font-size: 13px;
+}
+.phase-tabs button small {
+  font-size: 11px;
+  color: #7d94ab;
+}
+.phase-tabs button.active {
+  border-color: #4c7fdd;
+  background: #12233c;
+}
+.phase-tabs button.active small {
+  color: #a9c5e4;
+}
+.phase-panel {
+  border: 1px solid #1b3149;
+  border-radius: 8px;
+  padding: 14px;
+  background: #0a1826;
+}
+.phase-advantage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1b3149;
+  margin-bottom: 12px;
+}
+.phase-advantage b {
+  display: block;
+  font-size: 14px;
+}
+.phase-advantage p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: #9cb2ca;
+}
+.phase-advantage svg {
+  flex-shrink: 0;
+}
+.phase-advantage.your svg {
+  color: #35e991;
+}
+.phase-advantage.enemy svg {
+  color: #ff6067;
+}
+.phase-advantage.even svg {
+  color: #9cb2ca;
+}
+.phase-low-confidence {
+  font-size: 12px;
+  color: #e3a928;
+  background: #241c0e;
+  border: 1px solid #4a3520;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0 0 12px;
+}
+.phase-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.phase-team-col {
+  border: 1px solid #1b3149;
+  border-radius: 7px;
+  padding: 11px 12px;
+  background: #0d1e2f;
+}
+.phase-team-col.enemy {
+  border-color: #4a2530;
+  background: #1e131866;
+}
+.phase-team-col header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.phase-team-col header small {
+  color: #9cb2ca;
+  font-size: 11px;
+}
+.power-window {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #16283e;
+  overflow: hidden;
+  display: block;
+}
+.power-window i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: #6b7f96;
+}
+.power-window.strong i {
+  background: #35e991;
+}
+.power-window.moderate i {
+  background: #e3a928;
+}
+.power-window.weak i {
+  background: #ff6067;
+}
+.phase-team-col .game-plan {
+  font-size: 13px;
+  color: #c7d8ec;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.phase-list {
+  margin-bottom: 8px;
+}
+.phase-list b {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #7d94ab;
+  margin-bottom: 4px;
+}
+.phase-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.phase-list li {
+  font-size: 12px;
+  color: #c7d8ec;
+  padding-left: 12px;
+  position: relative;
+  line-height: 1.4;
+}
+.phase-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4c7fdd;
+}
+.phase-list.avoid li::before {
+  background: #ff6067;
+}
+.win-conditions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+.win-conditions > div {
+  border: 1px solid #1b3149;
+  border-radius: 7px;
+  padding: 11px 12px;
+  background: #0d1e2f;
+}
+.win-conditions b {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #7d94ab;
+  margin-bottom: 5px;
+}
+.win-conditions p {
+  margin: 0;
+  font-size: 12px;
+  color: #c7d8ec;
   line-height: 1.5;
 }
 
@@ -1867,6 +2093,56 @@ button {
 [data-theme="light"] .role-fill-hero,
 [data-theme="light"] .role-fill-tip {
   color: var(--text-muted);
+}
+[data-theme="light"] .phase-strategy {
+  border-color: var(--surface-panel-border);
+}
+[data-theme="light"] .phase-strategy-head small {
+  color: var(--text-muted);
+}
+[data-theme="light"] .phase-tabs button {
+  background: var(--surface-panel);
+  border-color: var(--surface-panel-border);
+  color: var(--text-body);
+}
+[data-theme="light"] .phase-tabs button small {
+  color: var(--text-muted);
+}
+[data-theme="light"] .phase-tabs button.active {
+  background: #dde9fb;
+  border-color: #4c7fdd;
+}
+[data-theme="light"] .phase-panel {
+  background: var(--surface-panel);
+  border-color: var(--surface-panel-border);
+}
+[data-theme="light"] .phase-advantage {
+  border-color: var(--surface-panel-border);
+}
+[data-theme="light"] .phase-advantage p,
+[data-theme="light"] .phase-team-col header small {
+  color: var(--text-muted);
+}
+[data-theme="light"] .phase-team-col {
+  background: #f3f6fb;
+  border-color: var(--surface-panel-border);
+}
+[data-theme="light"] .phase-team-col.enemy {
+  background: #fbeef0;
+  border-color: #e6c3c9;
+}
+[data-theme="light"] .phase-team-col .game-plan,
+[data-theme="light"] .phase-list li,
+[data-theme="light"] .win-conditions p {
+  color: var(--text-body);
+}
+[data-theme="light"] .phase-list b,
+[data-theme="light"] .win-conditions b {
+  color: var(--text-muted);
+}
+[data-theme="light"] .win-conditions > div {
+  background: var(--surface-panel);
+  border-color: var(--surface-panel-border);
 }
 [data-theme="light"] .recommendations {
   background: #f3f6fbcc;
